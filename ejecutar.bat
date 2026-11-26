@@ -2,7 +2,7 @@
 setlocal
 cd /d "%~dp0"
 
-if not exist ".venv\Scripts\python.exe" (
+if not exist ".venv\Scripts\pythonw.exe" (
     echo.
     echo No se encontro el entorno virtual .venv
     echo.
@@ -24,5 +24,6 @@ if not exist ".env" (
     )
 )
 
-".venv\Scripts\python.exe" Programa.py
-if errorlevel 1 pause
+rem pythonw.exe abre la aplicacion sin la ventana negra de consola.
+start "" ".venv\Scripts\pythonw.exe" Programa.py
+exit /b 0

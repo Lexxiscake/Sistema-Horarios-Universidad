@@ -181,7 +181,9 @@ Es seguro ejecutarlo varias veces: no duplica los datos.
 python Programa.py
 ```
 
-O simplemente haz doble clic en **`ejecutar.bat`** (crea el `.env` si falta y usa el entorno virtual).
+O simplemente haz doble clic en **`ejecutar.bat`** (crea el `.env` si falta, usa el entorno virtual y abre la app sin la ventana negra de consola).
+
+> Si `ejecutar.bat` no abre la aplicación, ejecuta `python Programa.py` en una terminal para ver el error completo.
 
 ---
 
