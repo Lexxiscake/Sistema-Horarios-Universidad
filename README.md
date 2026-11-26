@@ -127,19 +127,13 @@ pip install -r requirements.txt
 
 ### 4. Configurar la conexión
 
-Copia el archivo de ejemplo:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Abre `.env` con tu editor o con Notepad:
+Crea un archivo `.env` en la raíz del proyecto:
 
 ```powershell
 notepad .env
 ```
 
-Ajusta como mínimo `DB_SERVER` según tu instalación. Por ejemplo:
+Escribe como mínimo `DB_SERVER`, `DB_NAME` y `DB_TRUSTED_CONNECTION`. Por ejemplo:
 
 ```ini
 # Instancia Express (lo más común)
@@ -178,12 +172,12 @@ Es seguro ejecutarlo varias veces: no duplica los datos.
 ### 6. Ejecutar la aplicación
 
 ```powershell
-python Programa.py
+pythonw.exe Programa.py
 ```
 
-O simplemente haz doble clic en **`ejecutar.bat`** (crea el `.env` si falta, usa el entorno virtual y abre la app sin la ventana negra de consola).
-
-> Si `ejecutar.bat` no abre la aplicación, ejecuta `python Programa.py` en una terminal para ver el error completo.
+- `pythonw.exe` (en lugar de `python`) abre la app **sin ventana negra de consola**.
+- Si necesitas ver los errores completos, ejecuta `python Programa.py` en una terminal.
+- `.env` **no se sube a git** (está en `.gitignore`); cada quien crea el suyo.
 
 ---
 
@@ -330,8 +324,6 @@ Sistema-Horarios-Universidad/
 ├── db_config.py               # Lectura de .env y conexión a SQL Server
 ├── Programa.py                # Punto de entrada de la aplicación
 ├── requirements.txt           # Dependencias de Python
-├── .env.example               # Ejemplo de configuración
-├── ejecutar.bat               # Atajo para abrir la app en Windows
 └── README.md
 ```
 

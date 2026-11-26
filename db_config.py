@@ -5,7 +5,7 @@ Los valores se leen del archivo `.env` (en la raíz del proyecto) o de las
 variables de entorno del sistema. Así cada persona puede usar su propia
 instancia de SQL Server sin tocar el código.
 
-Variables disponibles (ver `.env.example`):
+Variables disponibles (crear `.env` en la raíz del proyecto; ver README):
 
     DB_SERVER                    Servidor o instancia, ej. localhost\\SQLEXPRESS
     DB_PORT                      Puerto TCP (opcional)
