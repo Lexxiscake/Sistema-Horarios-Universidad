@@ -118,6 +118,9 @@ class Horario(QWidget):
         self.btn_carga.clicked.connect(
             lambda: navegacion.ir_carga(self, self.num_control)
         )
+        self.btn_horario.clicked.connect(
+            lambda: navegacion.ir_horario(self, self.num_control)
+        )
 
         # ---------- Panel central ----------
         panel_central = QVBoxLayout()
