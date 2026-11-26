@@ -1,3 +1,10 @@
+/* ============================================================================
+   ARCHIVO ANTIGUO - SOLO REFERENCIA
+   Contiene errores de sintaxis y datos que ya no coinciden con la aplicación.
+   Para instalar la base de datos usa:  BD/init_db.sql
+   o ejecuta:  python scripts/init_db.py
+   ============================================================================ */
+
 CREATE DATABASE PruebaDB
 USE PruebaDB
 

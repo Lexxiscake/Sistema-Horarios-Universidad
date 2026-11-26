@@ -1,13 +1,9 @@
-import pyodbc
+from db_config import get_connection
+
 
 # Conexión a SQL Server
 def conectar_sql():
-    return pyodbc.connect(
-        'DRIVER={ODBC Driver 17 for SQL Server};'
-        'SERVER=tcp:localhost,1433;'   
-        'DATABASE=PruebaDB;'
-        'Trusted_Connection=yes;'
-    )
+    return get_connection()
 
 def volver_inicio(self):
     from Logica_Interfaces.Menu import MenuLogic  

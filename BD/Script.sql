@@ -1,3 +1,9 @@
+/* ============================================================================
+   ARCHIVO ANTIGUO - SOLO REFERENCIA
+   Está incompleto y contiene caracteres corruptos. Para instalar la base de
+   datos usa:  BD/init_db.sql   o   python scripts/init_db.py
+   ============================================================================ */
+
 CREATE DATABASE PruebaDB
 USE PruebaDB
 

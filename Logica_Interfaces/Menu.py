@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
-import pyodbc
-import os
+
+from db_config import get_connection, resolve_project_path
 from Logica_Interfaces.LogicaCargaMaterias import CargaMateriasLogic as CargaMaterias
 from Diseño_Interfaces.Menu import Menu
 from Diseño_Interfaces.Kardex import Kardex
@@ -33,12 +33,7 @@ class MenuLogic(Menu):
 
     # Conexión SQL
     def conectar_sql(self):
-        return pyodbc.connect(
-            'DRIVER={ODBC Driver 17 for SQL Server};'
-            'SERVER=tcp:localhost,1433;'
-            'DATABASE=PruebaDB;'
-            'Trusted_Connection=yes;'
-        )
+        return get_connection()
 
     def cargar_datos_alumno(self):
         try:
@@ -62,10 +57,9 @@ class MenuLogic(Menu):
                 self.label_linea4.setText("<b>Estatus:</b> VIGENTE")
 
                 if foto:
-                    ruta_base = os.path.dirname(os.path.abspath(__file__))
-                    ruta_img = os.path.join(ruta_base, "..", foto) 
-                    if os.path.exists(ruta_img):
-                        pixmap = QPixmap(ruta_img).scaled(120, 120, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                    ruta_img = resolve_project_path(foto)
+                    if ruta_img.exists():
+                        pixmap = QPixmap(str(ruta_img)).scaled(120, 120, Qt.KeepAspectRatio, Qt.SmoothTransformation)
                         self.label_foto.setPixmap(pixmap)
                     else:
                         self.label_foto.setText("Foto perdida en la inmensidad del universo")

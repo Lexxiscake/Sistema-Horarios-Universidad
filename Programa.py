@@ -1,16 +1,9 @@
 from PyQt5.QtWidgets import QMessageBox
-import pyodbc
 
+from db_config import get_connection
 from Diseño_Interfaces.login import LoginWindow
 from Logica_Interfaces.Menu import MenuLogic
-# conexión con SQL Server
-def conectar_sql():
-    return pyodbc.connect(
-        'DRIVER={ODBC Driver 17 for SQL Server};'
-        'SERVER=tcp:localhost,1433;'
-        'DATABASE=PruebaDB;'
-        'Trusted_Connection=yes;'
-    )
+
 
 class LoginLogic(LoginWindow):
     def __init__(self):
@@ -18,12 +11,7 @@ class LoginLogic(LoginWindow):
         self.login_btn.clicked.connect(self.validar_login)
 
     def conectar_sql(self):
-        return pyodbc.connect(
-            'DRIVER={ODBC Driver 17 for SQL Server};'
-            'SERVER=tcp:localhost,1433;'
-            'DATABASE=PruebaDB;'
-            'Trusted_Connection=yes;'
-        )
+        return get_connection()
     
     def validar_login(self):
         numero_control = self.numero_control_input.text().strip()
@@ -53,7 +41,14 @@ class LoginLogic(LoginWindow):
             conn.close()
 
         except Exception as e:
-            QMessageBox.critical(self, "Se tropezó la conexión, sorry vuelva mañana", str(e))
+            QMessageBox.critical(
+                self,
+                "Error de conexión",
+                f"{e}\n\n"
+                "Si es la primera vez que ejecutas el proyecto, inicializa la "
+                "base de datos con:\n"
+                "    python scripts/init_db.py",
+            )
 
 if __name__ == "__main__":
     from PyQt5.QtWidgets import QApplication

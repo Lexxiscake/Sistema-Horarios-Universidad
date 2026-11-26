@@ -3,15 +3,15 @@
 # 🎓 Sistema de Gestión de Horarios Universitarios
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
   <img src="https://img.shields.io/badge/PyQt5-GUI-41CD52?style=for-the-badge&logo=qt&logoColor=white"/>
   <img src="https://img.shields.io/badge/SQL_Server-Database-CC2927?style=for-the-badge&logo=microsoftsqlserver&logoColor=white"/>
   <img src="https://img.shields.io/badge/Algorithm-Backtracking-6A0DAD?style=for-the-badge"/>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/last-commit/Dregxmoon/Universidad?style=flat-square&color=orange"/>
-  <img src="https://img.shields.io/github/repo-size/Dregxmoon/Universidad?style=flat-square&color=blue"/>
+  <img src="https://img.shields.io/github/last-commit/Lexxiscake/Sistema-Horarios-Universidad?style=flat-square&color=orange"/>
+  <img src="https://img.shields.io/github/repo-size/Lexxiscake/Sistema-Horarios-Universidad?style=flat-square&color=blue"/>
   <img src="https://img.shields.io/badge/status-active-success?style=flat-square"/>
 </p>
 
@@ -51,7 +51,7 @@ Su módulo estrella es la **carga inteligente de materias**, que mediante el alg
   <img src="https://img.shields.io/badge/pyodbc-lightgrey?style=flat-square"/>
 </p>
 
-- **Python 3.8+** — Lenguaje principal
+- **Python 3.9+** — Lenguaje principal
 - **PyQt5** — Interfaz gráfica de escritorio
 - **SQL Server** — Base de datos relacional
 - **pyodbc** — Conexión Python ↔ SQL Server
@@ -59,20 +59,212 @@ Su módulo estrella es la **carga inteligente de materias**, que mediante el alg
 
 ---
 
-## 🗂️ Estructura del proyecto
+## ✅ Requisitos
 
-```
-Universidad/
-├── BD/                        # Scripts SQL (creación de tablas, procedimientos)
-├── Diseño_Interfaces/         # Archivos .ui de PyQt5 (vistas)
-├── Logica_Interfaces/         # Controladores y lógica de negocio
-├── img/                       # Recursos gráficos e íconos
-├── Programa.py                # Punto de entrada de la aplicación
-└── README.md
-```
+Antes de empezar, cada persona necesita tener instalado:
+
+1. **Python 3.9 o superior**
+   - Descarga: <https://www.python.org/downloads/>
+   - En Windows, marca la casilla **“Add python.exe to PATH”** durante la instalación.
+
+2. **SQL Server** (cualquiera de estas opciones):
+   - SQL Server Express (gratis): <https://www.microsoft.com/sql-server/sql-server-downloads>
+   - SQL Server Developer (gratis): misma página, opción *Developer*.
+   - Una instancia de SQL Server que ya tengas instalada.
+
+3. **Microsoft ODBC Driver 18 for SQL Server**
+   - Descarga: <https://learn.microsoft.com/sql/connect/odbc/download-odbc-driver-for-sql-server>
+   - Si no lo instalas, la aplicación intentará usar el driver antiguo **“SQL Server”** que Windows suele traer. Funciona, pero se recomienda el 18.
+
+4. **(Opcional) SQL Server Management Studio (SSMS)** para revisar la base de datos:
+   - Descarga: <https://aka.ms/ssmsfullsetup>
+
+> 💡 No necesitas descargar ninguna base de datos: el proyecto incluye un script que crea las tablas y los datos de prueba automáticamente.
 
 ---
 
+## 🚀 Instalación paso a paso (Windows)
+
+### 1. Clonar el repositorio
+
+```powershell
+git clone https://github.com/Lexxiscake/Sistema-Horarios-Universidad.git
+cd Sistema-Horarios-Universidad
+```
+
+Si no tienes Git, descarga el ZIP desde GitHub y descomprímelo.
+
+### 2. Crear el entorno virtual
+
+```powershell
+python -m venv .venv
+```
+
+Actívalo:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+> Si PowerShell muestra un error de *ExecutionPolicy*, ejecuta una vez:
+> ```powershell
+> Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+> ```
+> y vuelve a activar el entorno. También puedes usar directamente
+> `.\.venv\Scripts\python.exe` en lugar de `python`.
+
+En **CMD** sería:
+
+```cmd
+.venv\Scripts\activate
+```
+
+### 3. Instalar las dependencias
+
+```powershell
+pip install -r requirements.txt
+```
+
+### 4. Configurar la conexión
+
+Copia el archivo de ejemplo:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Abre `.env` con tu editor o con Notepad:
+
+```powershell
+notepad .env
+```
+
+Ajusta como mínimo `DB_SERVER` según tu instalación. Por ejemplo:
+
+```ini
+# Instancia Express (lo más común)
+DB_SERVER=localhost\SQLEXPRESS
+DB_PORT=
+
+# O instancia predeterminada
+# DB_SERVER=localhost
+# DB_PORT=1433
+
+DB_NAME=PruebaDB
+DB_TRUSTED_CONNECTION=yes
+```
+
+- `DB_TRUSTED_CONNECTION=yes` usa tu usuario de Windows (no necesitas contraseña).
+- Si tu SQL Server usa usuario y contraseña, cambia a `no` y llena `DB_USER` y `DB_PASSWORD`.
+
+### 5. Crear la base de datos y los datos de prueba
+
+```powershell
+python scripts/init_db.py
+```
+
+El script:
+- crea la base `PruebaDB` si no existe,
+- crea todas las tablas,
+- carga alumnos, materias y kardex de prueba,
+- genera los grupos y horarios del periodo activo,
+- crea el trigger de inscripciones.
+
+Es seguro ejecutarlo varias veces: no duplica los datos.
+
+> Alternativa con SSMS: abre `BD/init_db.sql` y ejecútalo con **F5**.
+> Asegúrate de tener permisos para crear bases de datos (o ejecuta SSMS como administrador).
+
+### 6. Ejecutar la aplicación
+
+```powershell
+python Programa.py
+```
+
+O simplemente haz doble clic en **`ejecutar.bat`** (crea el `.env` si falta y usa el entorno virtual).
+
+---
+
+## 🔑 Usuarios de prueba
+
+Estos usuarios se crean automáticamente con `init_db.py`:
+
+| Número de control | Contraseña | Nombre | Semestre |
+|---|---|---|---|
+| `23212001` | `tshzeybste` | Himiko Toga | 2 |
+| `23212002` | `panfilo` | Urabe Mikoto | 2 |
+| `23212005` | `kill` | Ryuko | 3 |
+| `23212006` | `miku` | Miku | 2 |
+| `23212007` | `doro123` | Doro | 3 |
+| `23212008` | `dinero` | Ryou | 4 |
+| `23212009` | `vampiro` | Anko | 5 |
+| `23212010` | `miedo` | Kobeni | 6 |
+| `23211907` | `galleta` | Samuel “Galleta” | 5 |
+
+> ⚠️ Las contraseñas se guardan en texto plano porque es un proyecto académico de demostración. No uses contraseñas reales.
+
+---
+
+## ⚙️ Variables de `.env`
+
+| Variable | Descripción | Ejemplo |
+|---|---|---|
+| `DB_SERVER` | Servidor o instancia de SQL Server | `localhost\SQLEXPRESS` |
+| `DB_PORT` | Puerto TCP (vacío si usas instancia con nombre) | `1433` |
+| `DB_NAME` | Nombre de la base de datos | `PruebaDB` |
+| `DB_TRUSTED_CONNECTION` | `yes` = autenticación de Windows, `no` = usuario/clave | `yes` |
+| `DB_USER` | Usuario de SQL Server (si aplica) | `sa` |
+| `DB_PASSWORD` | Contraseña de SQL Server (si aplica) | `MiClave123` |
+| `DB_DRIVER` | Driver ODBC; vacío = autodetectar | `ODBC Driver 18 for SQL Server` |
+| `DB_ENCRYPT` | Cifrado de la conexión (drivers 17/18) | `yes` |
+| `DB_TRUST_SERVER_CERTIFICATE` | Acepta certificados autofirmados locales | `yes` |
+
+---
+
+## 🧭 ¿Cómo sé el nombre de mi instancia de SQL Server?
+
+Abre **SSMS** y mira el campo *Server name* de la ventana de conexión. Algunos ejemplos:
+
+- `localhost` → instancia predeterminada.
+- `localhost\SQLEXPRESS` → instancia Express.
+- `DESKTOP-ABC\SQLEXPRESS` → instancia Express en otra PC.
+- `localhost,1433` → servidor con puerto TCP explícito.
+
+También puedes ejecutar en PowerShell:
+
+```powershell
+Get-Service MSSQL*
+```
+
+o dentro de SQL Server:
+
+```sql
+SELECT @@SERVERNAME;
+```
+
+Si usas una **instancia con nombre** (`localhost\SQLEXPRESS`), deja `DB_PORT` vacío. Si usas `localhost` o una IP, normalmente necesitas `DB_PORT=1433`.
+
+---
+
+## 🗄️ Base de datos
+
+El script de instalación es **`BD/init_db.sql`**. Crea:
+
+| Tabla | Descripción |
+|---|---|
+| `Alumnos` | Datos de los estudiantes y credenciales |
+| `Materias` | Catálogo de materias por semestre |
+| `Kardex` | Historial académico (aprobadas, reprobadas, cursando) |
+| `Periodos` | Periodos escolares y cuál está activo |
+| `Grupos` | Grupos A–D por materia, cupo y aula |
+| `Horario_Grupo` | Días y horas de cada grupo |
+| `Inscripciones` | Materias inscritas por el alumno |
+
+Además crea el trigger `TR_Inscribir_Auto_Cursando`, que registra la materia como `CURSANDO` en el kardex al inscribirse.
+
+> 📌 Los archivos `BD/Script.sql` y `BD/SQLQuery1.sql` son versiones antiguas del proyecto y no deben usarse para una instalación nueva. Usa **`BD/init_db.sql`**.
+
+---
 
 ## 🤖 Carga inteligente con Backtracking
 
@@ -98,24 +290,54 @@ El resultado es un **horario completo, sin conflictos**, generado automáticamen
 
 ---
 
-## 🗄️ Base de datos
+## 🩺 Solución de problemas
 
-Los scripts de creación de tablas y datos iniciales se encuentran en la carpeta `BD/`. Deben ejecutarse en SQL Server antes de iniciar la aplicación por primera vez.
+| Error | Causa probable | Solución |
+|---|---|---|
+| `ModuleNotFoundError: No module named 'PyQt5'` | No se activó el entorno virtual o faltan dependencias | Activa `.venv` y ejecuta `pip install -r requirements.txt` |
+| `No se encuentra el nombre del origen de datos y no se especificó ningún controlador predeterminado` | Falta el driver ODBC | Instala **ODBC Driver 18** o pon `DB_DRIVER=SQL Server` si tienes el driver antiguo |
+| `Login failed for user 'sa'` | Autenticación SQL mal configurada | Usa `DB_TRUSTED_CONNECTION=yes` o revisa `DB_USER`/`DB_PASSWORD` |
+| `No se puede abrir la base de datos "PruebaDB"` | La base no existe | Ejecuta `python scripts/init_db.py` |
+| `Invalid object name 'Alumnos'` | La base existe pero está vacía | Ejecuta `python scripts/init_db.py` |
+| `TCP Provider: No such host is known` o `could not open a connection` | Servidor o puerto incorrecto, o TCP/IP deshabilitado | Revisa `DB_SERVER` y `DB_PORT`; si usas una instancia con nombre, habilita **TCP/IP** en *SQL Server Configuration Manager* y reinicia el servicio |
+| No conecta con una instancia con nombre | El servicio **SQL Server Browser** está detenido | Inícialo en `services.msc` (servicio `SQLBrowser`) o usa `localhost,1433` |
+| `El usuario no tiene permiso para crear la base de datos` | Tu usuario no tiene rol `dbcreator` | Ejecuta SSMS como administrador o pide que te den permisos |
+| `La arquitectura del DSN no coincide` | Python de 32 bits con driver de 64 bits | Instala Python de 64 bits |
+| La ventana no abre o error de *platform plugin* | PyQt5 incompleto | Reinstala: `pip install --force-reinstall PyQt5` |
 
-**Tablas principales:**
+Si el error persiste, abre una terminal en la carpeta del proyecto y ejecuta:
 
-| Tabla | Descripción |
-|---|---|
-| `Maestros` | Registro de docentes y disponibilidad |
-| `Materias` | Catálogo de materias por carrera |
-| `Horarios` | Asignaciones generadas |
-| `Grupos` | Grupos y semestres activos |
+```powershell
+python -c "from db_config import get_settings, pick_driver, build_connection_string; print(get_settings()); print(pick_driver()); print(build_connection_string())"
+```
+
+Eso muestra exactamente qué servidor, base y driver está usando la aplicación.
+
+---
+
+## 🗂️ Estructura del proyecto
+
+```
+Sistema-Horarios-Universidad/
+├── BD/
+│   ├── init_db.sql            # Script de instalación (usar este)
+│   ├── Script.sql             # Versión antigua (referencia)
+│   └── SQLQuery1.sql          # Versión antigua (referencia)
+├── Diseño_Interfaces/         # Vistas y diseño de ventanas PyQt5
+├── Logica_Interfaces/         # Controladores y lógica de negocio
+├── img/                       # Fotos de los alumnos
+├── scripts/
+│   └── init_db.py             # Crea la base de datos automáticamente
+├── db_config.py               # Lectura de .env y conexión a SQL Server
+├── Programa.py                # Punto de entrada de la aplicación
+├── requirements.txt           # Dependencias de Python
+├── .env.example               # Ejemplo de configuración
+├── ejecutar.bat               # Atajo para abrir la app en Windows
+└── README.md
+```
 
 ---
 
 <div align="center">
-  <img width="693" height="488" alt="image" src="https://github.com/user-attachments/assets/44063976-3c64-4565-8456-829f30ad747c" />
+  <img width="693" height="488" alt="Sistema de Horarios" src="https://github.com/user-attachments/assets/44063976-3c64-4565-8456-829f30ad747c" />
 </div>
-
----
-

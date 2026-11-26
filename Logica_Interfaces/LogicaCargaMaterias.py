@@ -1,8 +1,8 @@
-import pyodbc
 from PyQt5.QtWidgets import QMessageBox, QTreeWidgetItem, QTableWidgetItem
 from PyQt5.QtGui import QColor, QFont
 from PyQt5.QtCore import Qt
 
+from db_config import get_connection, parse_time
 from Diseño_Interfaces.CargaMaterias import CargaMaterias
 
 
@@ -39,12 +39,7 @@ class CargaMateriasLogic(CargaMaterias):
 
     # conexion a la base de datos
     def conectar(self):
-        return pyodbc.connect(
-            'DRIVER={ODBC Driver 17 for SQL Server};'
-            'SERVER=tcp:localhost,1433;'
-            'DATABASE=PruebaDB;'
-            'Trusted_Connection=yes;'
-        )
+        return get_connection()
 
     # carga
     def cargar_materias_disponibles(self):
@@ -195,8 +190,10 @@ class CargaMateriasLogic(CargaMaterias):
         if not r:
             return "--:--"
         try:
-            return f"{r[0].strftime('%H:%M')}–{r[1].strftime('%H:%M')}"
-        except:
+            inicio = parse_time(r[0])
+            fin = parse_time(r[1])
+            return f"{inicio.strftime('%H:%M')}–{fin.strftime('%H:%M')}"
+        except (TypeError, ValueError):
             return "--:--"
 
     def _get_materias_semestre(self, cur, semestre):
@@ -240,6 +237,8 @@ class CargaMateriasLogic(CargaMaterias):
                     WHEN 'Jueves' THEN 4 WHEN 'Viernes' THEN 5 END, Hora_inicio
             """, (idg,))
             for dia, ini, fin in cur.fetchall():
+                ini = parse_time(ini)
+                fin = parse_time(fin)
                 QTreeWidgetItem(item_grupo, [
                     f"      • {dia} {ini.strftime('%H:%M')} - {fin.strftime('%H:%M')}"
                 ])
@@ -311,6 +310,8 @@ class CargaMateriasLogic(CargaMaterias):
                         valido = False
                         break
 
+                    ini = parse_time(ini)
+                    fin = parse_time(fin)
                     fila = ini.hour - 7
                     if fila < 0 or fila >= 15:
                         valido = False
@@ -472,6 +473,7 @@ class CargaMateriasLogic(CargaMaterias):
                 if dia not in dias:
                     choq = True
                     break
+                hora = parse_time(hora)
                 fila = hora.hour - 7
                 col = dias.index(dia) + 1
                 if (fila, col) in self.horario_ocupado:
@@ -516,6 +518,7 @@ class CargaMateriasLogic(CargaMaterias):
             choq = False
             temp = []
             for dia, hora in hrs:
+                hora = parse_time(hora)
                 fila = hora.hour - 7
                 col = dias.index(dia) + 1
                 if (fila, col) in self.horario_ocupado:
@@ -554,6 +557,7 @@ class CargaMateriasLogic(CargaMaterias):
                 WHERE h.Id_grupo=?
             """, (idg,))
             for dia, hora, nombre, letra in cur.fetchall():
+                hora = parse_time(hora)
                 fila = hora.hour - 7
                 col = dias.index(dia) + 1
                 texto = f"{nombre} ({letra})"
@@ -609,6 +613,20 @@ class CargaMateriasLogic(CargaMaterias):
             conn.close()
             return
 
+        # Al borrar la inscripción también quitamos del kardex las materias
+        # que quedaron como CURSANDO por esa carga.
+        cur.execute(
+            """
+            DELETE k
+            FROM Kardex k
+            JOIN Inscripciones i ON i.Num_control = k.Num_control
+            JOIN Grupos g ON g.Id_grupo = i.Id_grupo
+            WHERE i.Num_control = ?
+              AND k.Serie = g.Serie_materia
+              AND k.Estatus = 'CURSANDO'
+            """,
+            (self.num_control,),
+        )
         cur.execute("DELETE FROM Inscripciones WHERE Num_control=?", (self.num_control,))
         conn.commit()
 
