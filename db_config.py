@@ -223,7 +223,7 @@ def parse_time(value) -> time:
 
 
 def resolve_project_path(relative_path: str) -> Path:
-    """Convierte una ruta guardada en la BD (ej. img/toga.jpg) en ruta absoluta."""
+    """Convierte una ruta guardada en la BD (ej. img/miku.jpg) en ruta absoluta."""
     path = Path(relative_path)
     if path.is_absolute():
         return path

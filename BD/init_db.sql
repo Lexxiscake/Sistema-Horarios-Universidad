@@ -155,7 +155,6 @@ BEGIN
     INSERT INTO dbo.Alumnos (Num_control, Nombre, Semestre, Carrera, Contraseña_hash, Foto)
     VALUES
         ('23211907', N'Samuel "Galleta"', 5, N'Ing. en Sistemas Computaciones', N'galleta',  N'img/galleta.jpeg'),
-        ('23212001', N'Himiko Toga',      2, N'Ing. en Sistemas Computaciones', N'tshzeybste', N'img/toga.jpg'),
         ('23212002', N'Urabe Mikoto',     2, N'Ing. en Sistemas Computaciones', N'panfilo',  N'img/urabe.jpg'),
         ('23212005', N'Ryuko',            3, N'Ing. en Sistemas Computaciones', N'kill',     N'img/Ryukio.jpg'),
         ('23212006', N'Miku',             2, N'Ing. en Sistemas Computaciones', N'miku',     N'img/miku.jpg'),
@@ -237,14 +236,6 @@ GO
 IF NOT EXISTS (SELECT 1 FROM dbo.Kardex)
 BEGIN
     INSERT INTO dbo.Kardex (Num_control, Serie, Calificacion, Estatus) VALUES
-    -- Himiko Toga (1er semestre aprobado)
-    ('23212001', 'ACF-0901', 90, 'APROBADA'),
-    ('23212001', 'AED-1285', 95, 'APROBADA'),
-    ('23212001', 'ACC-0906', 88, 'APROBADA'),
-    ('23212001', 'SCH-1024', 92, 'APROBADA'),
-    ('23212001', 'ACA-0907', 85, 'APROBADA'),
-    ('23212001', 'AEF-1041', 93, 'APROBADA'),
-
     -- Urabe Mikoto
     ('23212002', 'ACF-0901', 67, 'REPROBADA'),
     ('23212002', 'AED-1285', 50, 'REPROBADA'),

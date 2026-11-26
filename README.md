@@ -193,7 +193,6 @@ Estos usuarios se crean automáticamente con `init_db.py`:
 
 | Número de control | Contraseña | Nombre | Semestre |
 |---|---|---|---|
-| `23212001` | `tshzeybste` | Himiko Toga | 2 |
 | `23212002` | `panfilo` | Urabe Mikoto | 2 |
 | `23212005` | `kill` | Ryuko | 3 |
 | `23212006` | `miku` | Miku | 2 |
@@ -264,7 +263,7 @@ El script de instalación es **`BD/init_db.sql`**. Crea:
 
 Además crea el trigger `TR_Inscribir_Auto_Cursando`, que registra la materia como `CURSANDO` en el kardex al inscribirse.
 
-> 📌 Los archivos `BD/Script.sql` y `BD/SQLQuery1.sql` son versiones antiguas del proyecto y no deben usarse para una instalación nueva. Usa **`BD/init_db.sql`**.
+> 📌 La única fuente de verdad para crear la base es **`BD/init_db.sql`**.
 
 ---
 
@@ -322,9 +321,7 @@ Eso muestra exactamente qué servidor, base y driver está usando la aplicación
 ```
 Sistema-Horarios-Universidad/
 ├── BD/
-│   ├── init_db.sql            # Script de instalación (usar este)
-│   ├── Script.sql             # Versión antigua (referencia)
-│   └── SQLQuery1.sql          # Versión antigua (referencia)
+│   └── init_db.sql            # Script de instalación (usar este)
 ├── Diseño_Interfaces/         # Vistas y diseño de ventanas PyQt5
 ├── Logica_Interfaces/         # Controladores y lógica de negocio
 ├── img/                       # Fotos de los alumnos
