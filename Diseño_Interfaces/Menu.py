@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame
 from PyQt5.QtGui import QPixmap, QFont, QPainter, QLinearGradient, QColor, QBrush, QPainterPath, QRegion
 from PyQt5.QtCore import Qt
+from Diseño_Interfaces import navegacion
 
 class Menu(QWidget):
     def __init__(self):
@@ -9,7 +10,8 @@ class Menu(QWidget):
         self.setGeometry(100, 100, 800, 400)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setFixedSize(700, 400)
+        self.resize(800, 480)
+        self.setMinimumSize(700, 420)
         self.drag_position = None
 
         # Botón cerrar
@@ -24,6 +26,14 @@ class Menu(QWidget):
             }
         """)
         self.cerrar_btn.clicked.connect(self.close)
+
+        # Botón maximizar / restaurar
+        self.max_btn = QPushButton("☐", self)
+        self.max_btn.setGeometry(self.width() - 70, 10, 25, 25)
+        self.max_btn.setStyleSheet(self.cerrar_btn.styleSheet())
+        self.max_btn.clicked.connect(
+            lambda: navegacion.alternar_maximizado(self, self.max_btn)
+        )
 
         # Fuentes
         self.fuente_general = QFont("Segoe UI", 10)
@@ -76,21 +86,23 @@ class Menu(QWidget):
         painter.fillRect(self.rect(), QBrush(gradient))
 
     def resizeEvent(self, event):
-        path = QPainterPath()
-        path.addRoundedRect(0, 0, self.width(), self.height(), 20, 20)
-        region = path.toFillPolygon().toPolygon()
-        self.setMask(QRegion(region))
+        navegacion.actualizar_mascara(self, 20)
         self.cerrar_btn.setGeometry(self.width() - 35, 10, 25, 25)
+        self.max_btn.setGeometry(self.width() - 70, 10, 25, 25)
         super().resizeEvent(event)
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.LeftButton and not self.isMaximized():
             self.drag_position = event.globalPos() - self.frameGeometry().topLeft()
             event.accept()
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
-        if event.buttons() == Qt.LeftButton and self.drag_position is not None:
+        if (
+            event.buttons() == Qt.LeftButton
+            and self.drag_position is not None
+            and not self.isMaximized()
+        ):
             self.move(event.globalPos() - self.drag_position)
             event.accept()
         super().mouseMoveEvent(event)

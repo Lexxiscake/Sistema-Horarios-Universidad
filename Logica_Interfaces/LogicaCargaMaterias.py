@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt
 
 from db_config import get_connection, parse_time
 from Diseño_Interfaces.CargaMaterias import CargaMaterias
+from Diseño_Interfaces import navegacion
 
 
 class CargaMateriasLogic(CargaMaterias):
@@ -34,8 +35,12 @@ class CargaMateriasLogic(CargaMaterias):
         self.btn_limpiar.clicked.connect(self.limpiar_todo)
         self.btn_eliminar_carga.clicked.connect(self.eliminar_carga_bd)
         self.btn_finalizar.clicked.connect(self.finalizar_carga)
+        self.btn_volver.clicked.connect(self.volver_inicio)
 
         self.cargar_materias_disponibles()
+
+    def volver_inicio(self):
+        navegacion.ir_inicio(self, self.num_control)
 
     # conexion a la base de datos
     def conectar(self):
@@ -85,27 +90,30 @@ class CargaMateriasLogic(CargaMaterias):
                 sub.setFlags(sub.flags() & ~Qt.ItemIsSelectable)
                 item_paq.addChild(sub)
 
-        # paquetes personalizados
-        if materias_rep:
-            objetivo = self._armar_objetivo(cur, semestre, materias_rep)
-            paquetes_personalizados = self._generar_paquetes_personalizados(objetivo, periodo_id, cur)
+        # Paquetes personalizados (backtracking): se generan para TODOS los
+        # alumnos, no solo para quienes tienen materias reprobadas. Las
+        # reprobadas van primero como prioridad dentro del objetivo.
+        objetivo = self._armar_objetivo(cur, semestre, materias_rep)
+        paquetes_personalizados = self._generar_paquetes_personalizados(
+            objetivo, periodo_id, cur
+        )
 
-            if paquetes_personalizados:
-                nodo_pers = self._crear_nodo("PAQUETES PERSONALIZADOS", "#ffd7a6")
-                self.personalizados = paquetes_personalizados
+        if paquetes_personalizados:
+            nodo_pers = self._crear_nodo("PAQUETES PERSONALIZADOS", "#ffd7a6")
+            self.personalizados = paquetes_personalizados
 
-                for i, paquete in enumerate(paquetes_personalizados):
-                    letra_pers = chr(ord("A") + i)
-                    nodo = QTreeWidgetItem([f"Paquete Personalizado {letra_pers}"])
-                    nodo.setData(0, Qt.UserRole, f"PAQUETE:PERS_IDX:{i}")
-                    nodo.setBackground(0, QColor("#ffcc99"))
-                    nodo_pers.addChild(nodo)
+            for i, paquete in enumerate(paquetes_personalizados):
+                letra_pers = chr(ord("A") + i)
+                nodo = QTreeWidgetItem([f"Paquete Personalizado {letra_pers}"])
+                nodo.setData(0, Qt.UserRole, f"PAQUETE:PERS_IDX:{i}")
+                nodo.setBackground(0, QColor("#ffcc99"))
+                nodo_pers.addChild(nodo)
 
-                    for serie, nombre, grp, horas in paquete['detalle']:
-                        txt = f"   • {serie} - {nombre} → Grupo {grp} — {horas}"
-                        sub = QTreeWidgetItem([txt])
-                        sub.setFlags(sub.flags() & ~Qt.ItemIsSelectable)
-                        nodo.addChild(sub)
+                for serie, nombre, grp, horas in paquete['detalle']:
+                    txt = f"   • {serie} - {nombre} → Grupo {grp} — {horas}"
+                    sub = QTreeWidgetItem([txt])
+                    sub.setFlags(sub.flags() & ~Qt.ItemIsSelectable)
+                    nodo.addChild(sub)
 
         # mostrara en el panel las materias que reprobo con sus opciones de
         # grupos y horario
@@ -247,8 +255,15 @@ class CargaMateriasLogic(CargaMaterias):
     # GENERAR PAQUETES PERSONALIZADOS
     def _armar_objetivo(self, cur, semestre, materias_rep):
         """Arma la lista de materias objetivo (reprobadas + semestre)."""
+        objetivo = []
+
+        def agregar(serie):
+            if serie not in objetivo and len(objetivo) < self.MAX_PKG_SIZE:
+                objetivo.append(serie)
+
         # como prioridad las reprobadas primero
-        objetivo = [s[0] for s in materias_rep]  
+        for s in materias_rep:
+            agregar(s[0])
 
         # materias que sí puede cursar del semestre
         cur.execute("""
@@ -259,15 +274,20 @@ class CargaMateriasLogic(CargaMaterias):
                    SELECT Serie FROM Kardex WHERE Num_control=? AND Estatus='APROBADA'
               ))
               AND Serie NOT IN (
-                SELECT Serie FROM Kardex 
-                WHERE Num_control=? AND (Estatus='APROBADA' OR Estatus='CURSANDO')
+                 SELECT Serie FROM Kardex
+                 WHERE Num_control=? AND Estatus='APROBADA'
+              )
+              AND Serie NOT IN (
+                 SELECT g.Serie_materia
+                 FROM Inscripciones i
+                 JOIN Grupos g ON g.Id_grupo = i.Id_grupo
+                 WHERE i.Num_control=?
               )
             ORDER BY Serie
-        """, (semestre, self.num_control, self.num_control))
+        """, (semestre, self.num_control, self.num_control, self.num_control))
 
         for serie, in cur.fetchall():
-            if len(objetivo) < self.MAX_PKG_SIZE and serie not in objetivo:
-                objetivo.append(serie)
+            agregar(serie)
 
         return objetivo
 
@@ -278,6 +298,9 @@ class CargaMateriasLogic(CargaMaterias):
         - Intentamos combinarlos sin choques
         - Solo generamos hasta 4 soluciones
         """
+
+        if not objetivo_series:
+            return []
 
         # obtener opciones de cada materia
         opciones = {}
@@ -374,7 +397,7 @@ class CargaMateriasLogic(CargaMaterias):
                 dfs(i + 1)
 
                 for c in opt["celdas"]:
-                    usado.remove(c)
+                    usado.discard(c)
 
         dfs(0)
         return soluciones
@@ -643,6 +666,7 @@ class CargaMateriasLogic(CargaMaterias):
 
         conn = self.conectar()
         cur = conn.cursor()
+        exito = False
 
         try:
             for idg in self.selecciones.values():
@@ -651,6 +675,7 @@ class CargaMateriasLogic(CargaMaterias):
                     (self.num_control, idg)
                 )
             conn.commit()
+            exito = True
 
         except Exception as e:
             conn.rollback()
@@ -659,4 +684,10 @@ class CargaMateriasLogic(CargaMaterias):
         finally:
             conn.close()
 
-        self.close()
+        if exito:
+            QMessageBox.information(
+                self,
+                "Carga guardada",
+                "Tu carga de materias se registró correctamente.",
+            )
+            navegacion.ir_inicio(self, self.num_control)

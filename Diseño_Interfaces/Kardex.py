@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame, QGridLayout, QDialog
 from PyQt5.QtGui import QFont, QPainter, QLinearGradient, QColor, QBrush, QPainterPath, QRegion
 from PyQt5.QtCore import Qt
-from Logica_Interfaces.Kardex import obtener_materias_plan, obtener_estatus_materias, volver_inicio
+from Logica_Interfaces.Kardex import obtener_materias_plan, obtener_estatus_materias
+from Diseño_Interfaces import navegacion
 
 class InfoMateriaPopup(QDialog):
     def __init__(self, serie, nombre, creditos, estado, calificacion):
@@ -39,7 +40,8 @@ class Kardex(QWidget):
         self.setWindowTitle("Kárdex")
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setFixedSize(1100, 700)
+        self.resize(1100, 700)
+        self.setMinimumSize(900, 600)
         self.drag_position = None
 
         self.cerrar_btn = QPushButton("✕", self)
@@ -57,6 +59,13 @@ class Kardex(QWidget):
         """)
         self.cerrar_btn.clicked.connect(self.close)
 
+        self.max_btn = QPushButton("☐", self)
+        self.max_btn.setGeometry(self.width() - 70, 10, 25, 25)
+        self.max_btn.setStyleSheet(self.cerrar_btn.styleSheet())
+        self.max_btn.clicked.connect(
+            lambda: navegacion.alternar_maximizado(self, self.max_btn)
+        )
+
         self.init_ui()
 
     def paintEvent(self, event):
@@ -68,20 +77,22 @@ class Kardex(QWidget):
         painter.fillRect(self.rect(), QBrush(gradient))
 
     def resizeEvent(self, event):
-        path = QPainterPath()
-        path.addRoundedRect(0, 0, self.width(), self.height(), 20, 20)
-        region = path.toFillPolygon().toPolygon()
-        self.setMask(QRegion(region))
+        navegacion.actualizar_mascara(self, 20)
         self.cerrar_btn.setGeometry(self.width() - 35, 10, 25, 25)
+        self.max_btn.setGeometry(self.width() - 70, 10, 25, 25)
         super().resizeEvent(event)
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.LeftButton and not self.isMaximized():
             self.drag_position = event.globalPos() - self.frameGeometry().topLeft()
             event.accept()
 
     def mouseMoveEvent(self, event):
-        if event.buttons() == Qt.LeftButton and self.drag_position is not None:
+        if (
+            event.buttons() == Qt.LeftButton
+            and self.drag_position is not None
+            and not self.isMaximized()
+        ):
             self.move(event.globalPos() - self.drag_position)
             event.accept()
 
@@ -107,7 +118,18 @@ class Kardex(QWidget):
             "Carga de Materias": QPushButton("Carga de Materias"),
             "Horario": QPushButton("Horario")
         }
-        botones["Inicio"].clicked.connect(lambda: volver_inicio(self))
+        botones["Inicio"].clicked.connect(
+            lambda: navegacion.ir_inicio(self, self.num_control)
+        )
+        botones["Kárdex"].clicked.connect(
+            lambda: navegacion.ir_kardex(self, self.num_control)
+        )
+        botones["Carga de Materias"].clicked.connect(
+            lambda: navegacion.ir_carga(self, self.num_control)
+        )
+        botones["Horario"].clicked.connect(
+            lambda: navegacion.ir_horario(self, self.num_control)
+        )
 
         for btn in botones.values():
             btn.setFont(fuente_general)

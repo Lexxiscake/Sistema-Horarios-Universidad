@@ -3,9 +3,8 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
 
 from db_config import get_connection, resolve_project_path
-from Logica_Interfaces.LogicaCargaMaterias import CargaMateriasLogic as CargaMaterias
 from Diseño_Interfaces.Menu import Menu
-from Diseño_Interfaces.Kardex import Kardex
+from Diseño_Interfaces import navegacion
 
 
 class MenuLogic(Menu):
@@ -17,19 +16,23 @@ class MenuLogic(Menu):
         # Cargar datos del alumno 
         self.cargar_datos_alumno()
 
+        self.btn_inicio.clicked.connect(self.recargar_menu)
         self.btn_kardex.clicked.connect(self.abrir_kardex)
         self.btn_materias.clicked.connect(self.abrir_carga_materias)
+        self.btn_horario.clicked.connect(self.abrir_horario)
 
     # Navegación 
+    def recargar_menu(self):
+        navegacion.ir_inicio(self, self.num_control)
+
     def abrir_kardex(self):
-        self.ventana_kardex = Kardex(self.num_control)
-        self.ventana_kardex.show()
-        self.close()
+        navegacion.ir_kardex(self, self.num_control)
 
     def abrir_carga_materias(self):
-        self.carga_window = CargaMaterias(self.num_control)  
-        self.carga_window.show()
-        self.close()
+        navegacion.ir_carga(self, self.num_control)
+
+    def abrir_horario(self):
+        navegacion.ir_horario(self, self.num_control)
 
     # Conexión SQL
     def conectar_sql(self):

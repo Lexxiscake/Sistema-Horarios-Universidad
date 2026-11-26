@@ -4,13 +4,15 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QPainter, QLinearGradient, QColor, QBrush, QPainterPath, QRegion
 from PyQt5.QtCore import Qt
+from Diseño_Interfaces import navegacion
 
 
 class CargaMaterias(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Carga de Materias")
-        self.setFixedSize(1300, 750)
+        self.resize(1300, 750)
+        self.setMinimumSize(1000, 650)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.drag_position = None
@@ -21,6 +23,13 @@ class CargaMaterias(QWidget):
             "background: transparent; color: black; font-size: 18px; border: none;"
         )
         self.cerrar_btn.clicked.connect(self.close)
+
+        # Botón maximizar / restaurar
+        self.max_btn = QPushButton("☐", self)
+        self.max_btn.setStyleSheet(self.cerrar_btn.styleSheet())
+        self.max_btn.clicked.connect(
+            lambda: navegacion.alternar_maximizado(self, self.max_btn)
+        )
 
         self.init_ui()
 
@@ -34,20 +43,23 @@ class CargaMaterias(QWidget):
         painter.fillRect(self.rect(), QBrush(gradient))
 
     def resizeEvent(self, event):
-        path = QPainterPath()
-        path.addRoundedRect(0, 0, self.width(), self.height(), 25, 25)
-        self.setMask(QRegion(path.toFillPolygon().toPolygon()))
+        navegacion.actualizar_mascara(self, 25)
         self.cerrar_btn.setGeometry(self.width() - 40, 10, 30, 30)
+        self.max_btn.setGeometry(self.width() - 75, 10, 30, 30)
         super().resizeEvent(event)
 
     # Movimiento ventana
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.LeftButton and not self.isMaximized():
             self.drag_position = event.globalPos() - self.frameGeometry().topLeft()
             event.accept()
 
     def mouseMoveEvent(self, event):
-        if event.buttons() == Qt.LeftButton and self.drag_position is not None:
+        if (
+            event.buttons() == Qt.LeftButton
+            and self.drag_position is not None
+            and not self.isMaximized()
+        ):
             self.move(event.globalPos() - self.drag_position)
             event.accept()
 
@@ -59,6 +71,14 @@ class CargaMaterias(QWidget):
 
         # Panel izquierdo
         panel_izq = QVBoxLayout()
+
+        self.btn_volver = QPushButton("← Volver al inicio")
+        self.btn_volver.setFixedWidth(180)
+        self.btn_volver.setStyleSheet(
+            "background:#ffffff; color:#003366; padding:8px; border-radius:8px;"
+            "border:1px solid #99ccff; font-weight:bold;"
+        )
+        panel_izq.addWidget(self.btn_volver, alignment=Qt.AlignLeft)
 
         titulo_izq = QLabel("<b>MATERIAS DISPONIBLES</b>")
         titulo_izq.setStyleSheet("color: #003366; font-size: 16px; margin-bottom: 10px;")
